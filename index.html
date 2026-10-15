@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OmniSim 3D - Phần Mềm Mô Phỏng Hình Học Toán & Vật Lý 12 THPT</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- KaTeX CSS -->
+  <link rel="stylesheet" href="./node_modules/katex/dist/katex.min.css">
+  
+  <!-- Import Map for Three.js ES Modules -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "/node_modules/three/build/three.module.js",
+      "three/addons/": "/node_modules/three/examples/jsm/"
+    }
+  }
+  </script>
+
+  <!-- Style -->
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <div id="app" class="app-wrapper">
+    <!-- HEADER -->
+    <header class="app-header glass-card">
+      <div class="brand">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24" width="28" height="28" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+            <line x1="12" y1="22.08" x2="12" y2="12"></line>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h1>OmniSim 3D <span class="badge">GDPT 2018</span></h1>
+          <p>Mô Phỏng Hình Học Toán 2D/3D & Vật Lý 12 THPT Toàn Diện</p>
+        </div>
+      </div>
+
+      <!-- MAIN TABS (TOÁN vs VẬT LÝ) -->
+      <nav class="main-nav">
+        <button id="btn-tab-math" class="nav-tab active" data-tab="math">
+          <span class="icon">📐</span>
+          <span class="label">Hình Học Toán 2D/3D</span>
+        </button>
+        <button id="btn-tab-physics" class="nav-tab" data-tab="physics">
+          <span class="icon">⚡</span>
+          <span class="label">Vật Lý 12 Ảo</span>
+        </button>
+      </nav>
+
+      <!-- QUICK TOOLS -->
+      <div class="header-actions">
+        <button id="btn-export-img" class="btn btn-secondary btn-sm" title="Xuất ảnh bài giảng PNG">
+          <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          Xuất Ảnh
+        </button>
+        <button id="btn-fullscreen" class="btn btn-secondary btn-sm" title="Toàn màn hình">
+          <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></svg>
+          Toàn Màn Hình
+        </button>
+      </div>
+    </header>
+
+    <!-- CONTENT AREA -->
+    <main class="main-content">
+      <!-- ============================================== -->
+      <!-- MODULE 1: TOÁN HỌC (GEOLAB) -->
+      <!-- ============================================== -->
+      <section id="module-math" class="module-section active">
+        <!-- SUB-NAV MATH -->
+        <div class="sub-nav">
+          <button class="sub-tab active" data-sub="math-scanner">
+            <span class="pulse-dot"></span>
+            🔮 Trợ Lý Quét & Tự Động Vẽ Hình Đề Bài
+          </button>
+          <button class="sub-tab" data-sub="math-3d">
+            🧊 Mô Phỏng Không Gian 3D (Oxyz)
+          </button>
+          <button class="sub-tab" data-sub="math-2d">
+            📐 Hình Học Phẳng 2D (Oxy)
+          </button>
+          <button class="sub-tab" data-sub="math-samples">
+            📚 Thư Viện Đề Thi THPT Mẫu
+          </button>
+        </div>
+
+        <!-- 1.1 TRỢ LÝ QUÉT & PHÂN TÍCH ĐỀ BÀI (TÍNH NĂNG ĐẶC BIỆT) -->
+        <div id="subview-math-scanner" class="subview active">
+          <div class="workspace-grid">
+            <!-- Cột trái: Nhập đề bài / Chụp ảnh -->
+            <div class="panel glass-card scanner-input-panel">
+              <div class="panel-header">
+                <h3>🔮 Trợ Lý Tự Động Nhận Diện & Vẽ Hình</h3>
+                <span class="tag">AI NLP Engine</span>
+              </div>
+
+              <!-- Thẻ chọn ảnh chụp bài tập mẫu có sẵn (1-click test) -->
+              <div class="sample-photos-wrapper">
+                <label class="section-label">Ảnh Chụp Đề Bài Thực Tế (Bấm để quét ngay):</label>
+                <div class="sample-photos-grid">
+                  <div class="photo-card" id="card-photo-pyramid" data-sample="prob_pyramid_square_sa">
+                    <img src="./assets/sample_pyramid.jpg" alt="Đề Chóp S.ABCD" class="preview-thumb">
+                    <div class="photo-info">
+                      <span class="photo-title">Đề Chóp S.ABCD (SA ⊥ Đáy)</span>
+                      <span class="photo-badge">Đề Thi THPT QG</span>
+                    </div>
+                  </div>
+                  <div class="photo-card" id="card-photo-prism" data-sample="prob_prism_triangular">
+                    <img src="./assets/sample_prism.jpg" alt="Đề Lăng trụ tam giác" class="preview-thumb">
+                    <div class="photo-info">
+                      <span class="photo-title">Lăng Trụ ABC.A'B'C' (Đáy Vuông)</span>
+                      <span class="photo-badge">Vở Ghi Bài Tập</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Tải ảnh lên hoặc Chụp ảnh -->
+              <div class="upload-dropzone" id="dropzone">
+                <input type="file" id="file-input" accept="image/*" class="file-hidden">
+                <svg viewBox="0 0 24 24" width="32" height="32" stroke="currentColor" stroke-width="2" fill="none"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                <p><strong>Kéo thả ảnh đề bài</strong> hoặc <span class="highlight">Bấm để tải ảnh lên / chụp</span></p>
+                <span class="subtext">Hỗ trợ ảnh chụp vở ghi, đề thi in, viết tay</span>
+              </div>
+
+              <!-- Xem trước ảnh và hiệu ứng quét Laser -->
+              <div id="scan-preview-box" class="scan-preview-box" style="display: none;">
+                <div class="scan-laser-line"></div>
+                <img id="scanned-image-preview" src="" alt="Đang quét...">
+                <div class="scan-overlay-text">Đang phân tích hình học & bóc tách đỉnh...</div>
+              </div>
+
+              <!-- Ô nhập văn bản đề bài -->
+              <div class="text-input-group">
+                <div class="label-with-tools">
+                  <label for="problem-text-input">Hoặc Nhập Văn Bản Đề Bài:</label>
+                  <div class="symbol-toolbar">
+                    <button type="button" class="sym-btn" data-sym="⊥">⊥</button>
+                    <button type="button" class="sym-btn" data-sym="∥">∥</button>
+                    <button type="button" class="sym-btn" data-sym="Δ">Δ</button>
+                    <button type="button" class="sym-btn" data-sym="∠">∠</button>
+                    <button type="button" class="sym-btn" data-sym="√">√</button>
+                  </div>
+                </div>
+                <textarea id="problem-text-input" rows="4" placeholder="VD: Cho hình chóp S.ABCD có đáy ABCD là hình vuông cạnh a = 4, SA vuông góc với đáy (ABCD), SA = 5. Gọi H là hình chiếu của A lên SB..."></textarea>
+              </div>
+
+              <!-- Nút bấm phân tích -->
+              <div class="action-buttons-row">
+                <button id="btn-parse-and-render" class="btn btn-primary btn-glow">
+                  <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+                  Tự Động Dựng Hình 3D Ngay
+                </button>
+                <button id="btn-clear-problem" class="btn btn-secondary">Xóa</button>
+              </div>
+            </div>
+
+            <!-- Cột phải: Khung hiển thị mô hình 3D tự động & Tóm tắt toán học -->
+            <div class="panel visualizer-panel glass-card">
+              <div class="viewport-header">
+                <div class="model-badge">
+                  <span id="model-name-display">Hình chóp S.ABCD (SA ⊥ Đáy)</span>
+                </div>
+                <div class="viewport-controls">
+                  <button id="btn-toggle-axes" class="icon-btn active" title="Bật/Tắt hệ trục Oxyz">Oxyz</button>
+                  <button id="btn-toggle-labels" class="icon-btn active" title="Bật/Tắt nhãn đỉnh">A,B,C</button>
+                  <button id="btn-reset-cam-scanner" class="icon-btn" title="Căn giữa góc nhìn">🎯</button>
+                </div>
+              </div>
+
+              <!-- 3D Canvas Viewport -->
+              <div id="three-scanner-container" class="three-viewport"></div>
+
+              <!-- Bảng tóm tắt kết quả toán học (KaTeX) -->
+              <div class="analysis-results-box" id="analysis-results-box">
+                <h4>📐 Phân Tích Thông Số Hình Học & Tọa Độ Hóa:</h4>
+                <div class="math-cards-grid" id="math-cards-grid">
+                  <!-- Được điền tự động bằng Javascript -->
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 1.2 MÔ PHỎNG KHÔNG GIAN 3D (OXYZ STUDIO) -->
+        <div id="subview-math-3d" class="subview">
+          <div class="workspace-grid">
+            <!-- Sidebar cấu hình hình học 3D -->
+            <div class="panel glass-card controls-sidebar">
+              <h3>🧊 Kho Khối Không Gian Oxyz</h3>
+
+              <div class="control-group">
+                <label>Chọn Loại Khối:</label>
+                <select id="select-3d-preset" class="form-select">
+                  <optgroup label="Hình Chóp">
+                    <option value="pyramid_sa_square">Chóp S.ABCD (SA ⊥ Đáy vuông)</option>
+                    <option value="pyramid_regular_square">Chóp tứ giác đều S.ABCD</option>
+                    <option value="pyramid_sa_triangle">Chóp S.ABC (SA ⊥ Đáy tam giác)</option>
+                    <option value="regular_tetrahedron">Tứ diện đều S.ABC</option>
+                  </optgroup>
+                  <optgroup label="Khối Đa Diện">
+                    <option value="cube">Hình lập phương ABCD.A'B'C'D'</option>
+                    <option value="box">Hình hộp chữ nhật</option>
+                    <option value="prism_triangular">Lăng trụ đứng tam giác ABC.A'B'C'</option>
+                  </optgroup>
+                  <optgroup label="Khối Tròn Xoay">
+                    <option value="cone">Hình nón tròn xoay</option>
+                    <option value="cylinder">Hình trụ tròn xoay</option>
+                    <option value="sphere">Hình cầu (Mặt cầu)</option>
+                  </optgroup>
+                </select>
+              </div>
+
+              <div class="control-group" id="group-dim-a">
+                <label>Kích Thước Cạnh Đáy a: <span id="val-dim-a" class="slider-val">4.0</span></label>
+                <input type="range" id="slider-dim-a" min="2" max="8" step="0.5" value="4">
+              </div>
+
+              <div class="control-group" id="group-dim-h">
+                <label>Chiều Cao h: <span id="val-dim-h" class="slider-val">5.0</span></label>
+                <input type="range" id="slider-dim-h" min="2" max="10" step="0.5" value="5">
+              </div>
+
+              <!-- Mặt phẳng cắt (Thiết diện) -->
+              <div class="control-group feature-box">
+                <div class="toggle-row">
+                  <label for="toggle-cross-section"><strong>Mặt Phẳng Cắt (Thiết Diện)</strong></label>
+                  <input type="checkbox" id="toggle-cross-section">
+                </div>
+                <div id="cross-section-controls" style="display: none; margin-top: 10px;">
+                  <label>Vị trí độ cao z: <span id="val-cross-z" class="slider-val">2.5</span></label>
+                  <input type="range" id="slider-cross-z" min="0.5" max="6" step="0.25" value="2.5">
+                </div>
+              </div>
+
+              <!-- Chế độ hiển thị mặt -->
+              <div class="control-group">
+                <label>Chế Độ Hiển Thị Bề Mặt:</label>
+                <div class="btn-group-toggle">
+                  <button class="btn-toggle active" data-mode="glass">Thủy Tinh Trong</button>
+                  <button class="btn-toggle" data-mode="solid">Mặt Đặc</button>
+                  <button class="btn-toggle" data-mode="wireframe">Khung Dây</button>
+                </div>
+              </div>
+
+              <div class="control-group">
+                <button id="btn-reset-cam-3d" class="btn btn-secondary btn-block">🎯 Đặt Lại Góc Nhìn Camera</button>
+              </div>
+            </div>
+
+            <!-- Viewport 3D Studio -->
+            <div class="panel visualizer-panel glass-card">
+              <div class="three-viewport" id="three-studio-container"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 1.3 MÔ PHỎNG HÌNH HỌC PHẲNG 2D (OXY) -->
+        <div id="subview-math-2d" class="subview">
+          <div class="workspace-grid">
+            <!-- Sidebar điều khiển 2D -->
+            <div class="panel glass-card controls-sidebar">
+              <h3>📐 Hình Học Phẳng Oxy</h3>
+
+              <div class="control-group">
+                <label>Chế Độ Hình:</label>
+                <div class="btn-group-toggle">
+                  <button class="btn-toggle active" data-mode2d="triangle">Tam Giác</button>
+                  <button class="btn-toggle" data-mode2d="circle">Đường Tròn</button>
+                  <button class="btn-toggle" data-mode2d="ellipse">Elip</button>
+                  <button class="btn-toggle" data-mode2d="vector">Vector</button>
+                </div>
+              </div>
+
+              <!-- Tùy chọn tam giác Oxy -->
+              <div id="options-triangle-2d" class="feature-box">
+                <h4>Các Điểm Đặc Biệt Tam Giác:</h4>
+                <label class="checkbox-label">
+                  <input type="checkbox" id="chk-centroid" checked> Trọng tâm G (Giao 3 trung tuyến)
+                </label>
+                <label class="checkbox-label">
+                  <input type="checkbox" id="chk-orthocenter" checked> Trực tâm H (Giao 3 đường cao)
+                </label>
+                <label class="checkbox-label">
+                  <input type="checkbox" id="chk-circumcircle" checked> Tâm O & Đường tròn ngoại tiếp
+                </label>
+                <label class="checkbox-label">
+                  <input type="checkbox" id="chk-medians"> Hiện các đường trung tuyến
+                </label>
+              </div>
+
+              <!-- Thống kê tính toán thời gian thực -->
+              <div class="stats-card" id="stats-2d-display">
+                <h4>Thống Kê Tọa Độ:</h4>
+                <div id="stats-2d-content" class="stats-content">
+                  <!-- Điền tự động -->
+                </div>
+              </div>
+            </div>
+
+            <!-- 2D Canvas Viewport -->
+            <div class="panel visualizer-panel glass-card">
+              <div class="canvas-header-hint">
+                💡 <em>Dùng chuột kéo thả các điểm đỉnh A, B, C để thay đổi hình dạng tức thì! Lăn chuột để phóng to/thu nhỏ.</em>
+              </div>
+              <canvas id="canvas-2d-oxy"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- 1.4 THƯ VIỆN ĐỀ THI MẪU -->
+        <div id="subview-math-samples" class="subview">
+          <div class="sample-library-container">
+            <h3>📚 Kho Đề Bài Hình Học Chuẩn Tuyển Chọn (Lớp 11 - 12 THPT)</h3>
+            <p class="subtitle">Bấm vào bất kỳ bài toán nào để phần mềm tự động nạp đề và mô phỏng 3D ngay lập tức.</p>
+            <div class="sample-cards-list" id="sample-cards-list"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================== -->
+      <!-- MODULE 2: VẬT LÝ 12 ẢO (PHYSICLAB 12) -->
+      <!-- ============================================== -->
+      <section id="module-physics" class="module-section">
+        <!-- SUB-NAV PHYSICS -->
+        <div class="sub-nav">
+          <button class="sub-tab active" data-sub="phys-gas">
+            🔥 1. Vật Lý Nhiệt & Khí Lý Tưởng (Boyle, Charles)
+          </button>
+          <button class="sub-tab" data-sub="phys-em">
+            🧲 2. Từ Trường & Cảm Ứng Điện Từ (Faraday, Lenz)
+          </button>
+          <button class="sub-tab" data-sub="phys-wave">
+            〰️ 3. Sóng Điện Từ 3D & Dòng Điện Xoay Chiều AC
+          </button>
+          <button class="sub-tab" data-sub="phys-nuclear">
+            ☢️ 4. Vật Lý Hạt Nhân & Phóng Xạ Nguyên Tử
+          </button>
+        </div>
+
+        <!-- 2.1 VẬT LÝ NHIỆT & KHÍ LÝ TƯỞNG -->
+        <div id="subview-phys-gas" class="subview active">
+          <div class="workspace-grid">
+            <!-- Sidebar điều khiển Khí -->
+            <div class="panel glass-card controls-sidebar">
+              <h3>🔥 Thuyết Động Học Phân Tử Khí</h3>
+              <p class="desc-text">Mô hình các phân tử khí chuyển động nhiệt hỗn loạn va chạm thành bình và piston theo chuẩn SGK Vật lý 12.</p>
+
+              <div class="control-group">
+                <label>Đẳng Quá Trình:</label>
+                <div class="btn-group-toggle">
+                  <button class="btn-toggle active" data-gas-mode="free">Tự Do</button>
+                  <button class="btn-toggle" data-gas-mode="isothermal">Đẳng Nhiệt</button>
+                  <button class="btn-toggle" data-gas-mode="isobaric">Đẳng Áp</button>
+                  <button class="btn-toggle" data-gas-mode="isochoric">Đẳng Tích</button>
+                </div>
+              </div>
+
+              <div class="control-group">
+                <label>Nhiệt Độ T (Kelvin): <span id="val-gas-t" class="slider-val">300 K</span></label>
+                <input type="range" id="slider-gas-temp" min="100" max="750" step="10" value="300">
+                <div class="heat-buttons-row">
+                  <button id="btn-heat-fire" class="btn btn-sm btn-flame">🔥 Nung Nóng</button>
+                  <button id="btn-heat-ice" class="btn btn-sm btn-ice">❄️ Làm Lạnh</button>
+                  <button id="btn-heat-stop" class="btn btn-sm btn-secondary">Tắt</button>
+                </div>
+              </div>
+
+              <div class="control-group">
+                <label>Thể Tích Xi-lanh V: <span id="val-gas-v" class="slider-val">5.0 L</span></label>
+                <input type="range" id="slider-gas-vol" min="1.5" max="10.0" step="0.1" value="5.0">
+              </div>
+
+              <!-- Thẻ trạng thái nhiệt động học -->
+              <div class="stats-card">
+                <h4>Đại Lượng Trạng Thái:</h4>
+                <div class="stat-row"><span>Áp suất (p):</span> <strong id="stat-gas-p" class="accent-cyan">1.00 atm</strong></div>
+                <div class="stat-row"><span>Thể tích (V):</span> <strong id="stat-gas-v" class="accent-amber">5.00 L</strong></div>
+                <div class="stat-row"><span>Nhiệt độ (T):</span> <strong id="stat-gas-t" class="accent-rose">300 K (26.9°C)</strong></div>
+                <div class="stat-row"><span>Phương trình:</span> <span class="formula-text">p·V = n·R·T</span></div>
+              </div>
+
+              <!-- Canvas đồ thị p-V thu nhỏ -->
+              <div class="graph-card">
+                <h4>Đồ Thị Biến Đổi Trạng Thái p - V:</h4>
+                <canvas id="canvas-gas-graph"></canvas>
+              </div>
+            </div>
+
+            <!-- Canvas Xi-lanh Phân tử khí -->
+            <div class="panel visualizer-panel glass-card">
+              <div class="canvas-header-hint">
+                💡 <em>Dùng chuột kéo thanh Piston sang trái/phải hoặc bấm nút "Nung Nóng/Làm Lạnh" để quan sát chuyển động phân tử và biến đổi áp suất!</em>
+              </div>
+              <canvas id="canvas-gas-sim"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2.2 TỪ TRƯỜNG & CẢM ỨNG ĐIỆN TỪ -->
+        <div id="subview-phys-em" class="subview">
+          <div class="workspace-grid">
+            <!-- Sidebar Từ trường -->
+            <div class="panel glass-card controls-sidebar">
+              <h3>🧲 Cảm Ứng Điện Từ & Lực Từ</h3>
+
+              <div class="control-group">
+                <label>Chuyên Đề:</label>
+                <div class="btn-group-toggle">
+                  <button class="btn-toggle active" data-em-mode="faraday">Cảm Ứng Faraday & Lenz</button>
+                  <button class="btn-toggle" data-em-mode="lorentz">Lực Lorentz Lệch Hạt</button>
+                </div>
+              </div>
+
+              <!-- Nút điều khiển Faraday -->
+              <div id="em-faraday-controls">
+                <div class="control-group">
+                  <button id="btn-toggle-oscillate" class="btn btn-primary btn-block">⟷ Tự Động Dao Động Nam Châm</button>
+                </div>
+                <div class="control-group">
+                  <button id="btn-flip-magnet" class="btn btn-secondary btn-block">🔄 Đảo Cực Nam Châm (N ⟷ S)</button>
+                </div>
+
+                <div class="stats-card">
+                  <h4>Đo Lường Thời Gian Thực:</h4>
+                  <div class="stat-row"><span>Từ thông qua ống (Φ):</span> <strong id="stat-em-flux">0.00 Wb</strong></div>
+                  <div class="stat-row"><span>Suất điện động (e_c):</span> <strong id="stat-em-emf" class="accent-amber">0.00 V</strong></div>
+                  <div class="stat-row"><span>Dòng điện cảm ứng (I):</span> <strong id="stat-em-current" class="accent-cyan">0.00 A</strong></div>
+                  <div class="stat-row"><span>Định luật Faraday:</span> <span class="formula-text">e_c = −ΔΦ / Δt</span></div>
+                </div>
+              </div>
+
+              <!-- Nút điều khiển Lorentz -->
+              <div id="em-lorentz-controls" style="display: none;">
+                <div class="control-group">
+                  <label>Độ Lớn Từ Trường B (Tesla): <span id="val-lorentz-b" class="slider-val">1.5 T</span></label>
+                  <input type="range" id="slider-lorentz-b" min="0.5" max="3.0" step="0.25" value="1.5">
+                </div>
+                <div class="control-group">
+                  <label>Vận Tốc Hạt v: <span id="val-lorentz-v" class="slider-val">4.0 m/s</span></label>
+                  <input type="range" id="slider-lorentz-v" min="1.0" max="8.0" step="0.5" value="4.0">
+                </div>
+                <div class="control-group">
+                  <label>Dấu Điện Tích q:</label>
+                  <div class="btn-group-toggle">
+                    <button class="btn-toggle active" id="btn-charge-pos">Dương (+)</button>
+                    <button class="btn-toggle" id="btn-charge-neg">Âm (−)</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Viewport Mô phỏng Cảm ứng điện từ -->
+            <div class="panel visualizer-panel glass-card">
+              <canvas id="canvas-em-sim"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2.3 SÓNG ĐIỆN TỪ 3D & DÒNG ĐIỆN AC -->
+        <div id="subview-phys-wave" class="subview">
+          <div class="workspace-grid">
+            <!-- Sidebar Sóng & AC -->
+            <div class="panel glass-card controls-sidebar">
+              <h3>〰️ Sóng Điện Từ & Dòng Xoay Chiều</h3>
+              <p class="desc-text">Mô phỏng 3D sóng điện từ với hai vector vuông góc <strong>E ⊥ B ⊥ v</strong> truyền dọc không gian và nguyên lý máy phát điện xoay chiều AC.</p>
+
+              <div class="control-group">
+                <label>Tần Số Sóng f (Hz): <span id="val-wave-f" class="slider-val">1.0 Hz</span></label>
+                <input type="range" id="slider-wave-freq" min="0.5" max="3.0" step="0.25" value="1.0">
+              </div>
+
+              <div class="control-group">
+                <label>Bước Sóng λ: <span id="val-wave-l" class="slider-val">5.0 m</span></label>
+                <input type="range" id="slider-wave-len" min="3.0" max="8.0" step="0.5" value="5.0">
+              </div>
+
+              <div class="control-group">
+                <button id="btn-toggle-wave-play" class="btn btn-primary btn-block">⏯ Tạm Dừng / Tiếp Tục</button>
+              </div>
+
+              <!-- Máy phát điện xoay chiều AC -->
+              <div class="graph-card">
+                <h4>Máy Phát Điện AC & Vector Quay Fresnel:</h4>
+                <canvas id="canvas-ac-generator"></canvas>
+              </div>
+            </div>
+
+            <!-- 3D Three.js Sóng Điện Từ Viewport -->
+            <div class="panel visualizer-panel glass-card">
+              <div class="three-viewport" id="three-wave-container"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2.4 VẬT LÝ HẠT NHÂN & PHÓNG XẠ -->
+        <div id="subview-phys-nuclear" class="subview">
+          <div class="workspace-grid">
+            <!-- Sidebar Phóng xạ -->
+            <div class="panel glass-card controls-sidebar">
+              <h3>☢️ Vật Lý Hạt Nhân & Phóng Xạ</h3>
+              <p class="desc-text">Mô hình phân rã hạt nhân ngẫu nhiên, phát xạ hạt alpha, beta, gamma và kiểm chứng định luật hàm mũ phóng xạ.</p>
+
+              <div class="control-group">
+                <label>Chọn Đồng Vị Phóng Xạ:</label>
+                <select id="select-isotope" class="form-select">
+                  <option value="c14">Carbon-14 (T = 5730 năm, Định tuổi cổ vật)</option>
+                  <option value="ra226">Radium-226 (T = 1600 năm, Bắn phá hạt Alpha)</option>
+                  <option value="i131">Iodine-131 (T = 8 ngày, Y tế xạ trị)</option>
+                </select>
+              </div>
+
+              <div class="control-group">
+                <button id="btn-reset-decay" class="btn btn-secondary btn-block">🔄 Tạo Mẫu Mới / Bắt Đầu Lại</button>
+              </div>
+
+              <div class="stats-card">
+                <h4>Đếm Hạt Nhân Thời Gian Thực:</h4>
+                <div class="stat-row"><span>Số hạt mẹ còn lại (N):</span> <strong id="stat-nuc-rem" class="accent-cyan">220</strong></div>
+                <div class="stat-row"><span>Số hạt con sinh ra:</span> <strong id="stat-nuc-dec" class="accent-purple">0</strong></div>
+                <div class="stat-row"><span>Tỷ lệ còn lại:</span> <strong id="stat-nuc-ratio">100%</strong></div>
+                <div class="stat-row"><span>Thời gian trôi qua:</span> <strong id="stat-nuc-time">0.00 chu kỳ T</strong></div>
+              </div>
+
+              <!-- Đồ thị phân rã lý thuyết vs thực nghiệm -->
+              <div class="graph-card">
+                <h4>Đồ Thị Định Luật Phóng Xạ N(t) = N0·2^(-t/T):</h4>
+                <canvas id="canvas-decay-graph"></canvas>
+              </div>
+            </div>
+
+            <!-- Viewport Mạng tinh thể Hạt nhân -->
+            <div class="panel visualizer-panel glass-card">
+              <canvas id="canvas-nuclear-sim"></canvas>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="app-footer">
+      <div class="footer-left">
+        <span>OmniSim 3D • Hệ thống mô phỏng giáo dục Toán & Vật lý Lớp 12 hiện đại</span>
+      </div>
+      <div class="footer-right">
+        <span>Chuẩn hóa GDPT 2018 Bộ Giáo Dục & Đào Tạo</span>
+      </div>
+    </footer>
+  </div>
+
+  <!-- KaTeX Script -->
+  <script src="./node_modules/katex/dist/katex.min.js"></script>
+
+  <!-- Main Application Script (ES Module) -->
+  <script type="module" src="./src/app.js"></script>
+</body>
+</html>
